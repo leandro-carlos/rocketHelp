@@ -8,7 +8,7 @@ import { Envelope, Key } from 'phosphor-react-native';
 
 import Logo from '../../assets/images/logo_secondary.svg'
 
-export default function SignIn() {
+export default function SignIn({ navigation }) {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -68,8 +68,8 @@ export default function SignIn() {
 
             <TouchableOpacity
                 style={style.btnLogin}
-                onPress={
-                    null
+                onPress={() =>
+                    navigation.navigate('Home')
                 }
             >
                 <Text style={{ color: 'white', fontSize: 18 }}>Entrar</Text>
