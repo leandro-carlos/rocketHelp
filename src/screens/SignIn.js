@@ -16,11 +16,6 @@ export default function SignIn({ navigation }) {
     return (
 
         <View style={style.container}>
-            {/* <StatusBar
-                barStyle='light-content'
-                backgroundColor='transpareFnt'
-                translucent
-            /> */}
             <Logo width='200' height='200' fill='white' />
 
             <Text style={{ color: '#E1E1E6', fontSize: 20, marginBottom: 12, }}>Acesse sua conta</Text>
@@ -108,6 +103,6 @@ const style = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 7.5,
-        backgroundColor: '#00875F'
+        backgroundColor: '#00B37E'
     },
 })
