@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, TextInput } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, TextInput, Alert, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react';
+import auth from '@react-native-firebase/auth';
 
 import { Envelope, Key } from 'phosphor-react-native';
 
@@ -13,6 +14,28 @@ export default function SignIn({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    function HandleSignIn() {
+        if (!email || !password) {
+            return Alert.alert('Campos vazios', 'Por favor preencha ambos campos.')
+        }
+        
+        else {
+            auth().signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    navigation.navigate('Home')
+                })
+                .catch(error => {
+
+                    if (error.code === 'auth/wrong-password') {
+                        Alert.alert('Login Incorreto', 'Email ou senha incorreto!')
+                    }
+                    if (error.code === 'auth/user-not-found') {
+                        Alert.alert('Usúario não encontrado', 'Úsuario não encontrado, verifique se o email foi digitado corretamente!')
+                    }
+                    console.error(error);
+                });
+        }
+    }
     return (
 
         <View style={style.container}>
@@ -64,7 +87,7 @@ export default function SignIn({ navigation }) {
             <TouchableOpacity
                 style={style.btnLogin}
                 onPress={() =>
-                    navigation.navigate('Home')
+                    HandleSignIn()
                 }
             >
                 <Text style={{ color: 'white', fontSize: 18 }}>Entrar</Text>

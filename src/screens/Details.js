@@ -1,15 +1,37 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 
-import { CaretLeft } from 'phosphor-react-native'
+import { CaretLeft, CircleWavyCheck, Hourglass, DesktopTower, Newspaper } from 'phosphor-react-native'
 
 export default function Details({ navigation: { goBack }, route, navigation }) {
 
     const item = route.params.item;
+    const [solution, setSolution] = useState();
 
+    function handleOrderClose() {
+        if (!solution) {
+            return Alert.alert('Solicitação', 'Informa a solução para encerrar a solicitação');
+        }
 
-    console.log(item)
+        firestore()
+            .collection('Orders')
+            .doc(orderId)
+            .update({
+                status: 'closed',
+                solution,
+                closed_at: firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                Alert.alert('Solicitação', 'Solicitação encerrada.');
+                goBack();
+            })
+            .catch((error) => {
+                console.log(error);
+                Alert.alert('Solicitação', 'Não foi possível encerrar a solicitação');
+            });
+    }
     return (
+
         <View style={style.container}>
 
             <View style={style.header}>
@@ -20,24 +42,80 @@ export default function Details({ navigation: { goBack }, route, navigation }) {
 
             </View>
 
+            <View style={{
+                backgroundColor: '#2a292e', width: '100%',
+                marginVertical: 10, alignItems: 'center',
+                flexDirection: 'row', justifyContent: 'center'
+            }}>
+                <View style={{ alignItems: 'center', justifyContent: 'center', paddingRight: 5, paddingVertical: 5 }}>
+                    {
+                        item.status === 'closed'
+                            ? <CircleWavyCheck size={36} weight="thin" color='white' />
+                            : <Hourglass size={36} weight="thin" color='white' />
+                    }
+                </View>
+                {
+                    item.status === 'closed'
+                        ? <Text style={style.textInfo}>Finalizado</Text>
+                        : <Text style={style.textInfo}>Em andamento</Text>
+                }
+
+            </View>
+
             <View style={style.divEquipamento}>
-                <Text>Equipamento</Text>
-                <Text>Patrimônio: {item.patrimony}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <DesktopTower size={26} weight="regular" color='#996DFF' style={{ marginRight: 10 }} />
+
+                    <Text style={style.txtText}>Equipamento</Text>
+
+                </View>
+                <Text style={style.texto}>Patrimônio: {item.patrimony}</Text>
             </View>
 
             <View style={style.divDescricao}>
-                <Text>Descrição do problema</Text>
-                {/* <Text>Patrimônio: {item.}</Text> */}
+
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Newspaper size={26} weight="regular" color='#996DFF' style={{ marginRight: 10 }} />
+                    <Text style={style.txtText}>Descrição do problema</Text>
+                </View>
+                <Text style={style.texto}>{item.description}</Text>
 
             </View>
 
             <View style={style.divSolucao}>
-                <Text>Solução</Text>
-                {/* <Text>Patrimônio: {item.patrimony}</Text> */}
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                    <CircleWavyCheck size={26} weight="regular" color='#996DFF' style={{ marginRight: 10 }} />
+                    <Text style={style.txtText}>Solução</Text>
+                </View>
+                <TextInput
+                    style={{ backgroundColor: '#121214', flex: 0.95, textAlignVertical: 'top', borderRadius: 10, paddingHorizontal: 5 }}
+                    placeholder='Solução do problema:'
+                    placeholderTextColor={'white'}
+                    color='white'
+                    multiline
+                >
+                </TextInput>
             </View>
 
 
+            {item.status === 'open'
+                ? <View style={{ alignItems: 'center', }}>
+                    <TouchableOpacity
+                        style={style.btnClosedTicket}
+                        onPress={() => { handleOrderClose() }}
+                    >
+                        <Text style={{ color: 'white', textAlign: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                            Finalizar Ticket
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+                :
+                null
+            }
+
         </View>
+
     )
 }
 
@@ -55,29 +133,52 @@ const style = StyleSheet.create({
         paddingVertical: 15
     },
     divEquipamento: {
-        height: 65,
+        flex: 0.3,
         backgroundColor: "#201f23",
         textAlignVertical: 'top',
-        paddingHorizontal: 5,
+        paddingHorizontal: 10,
         paddingVertical: 5,
-        marginBottom: 15
+        marginBottom: 15,
     },
     divDescricao: {
         height: 65,
         backgroundColor: "#201f23",
         textAlignVertical: 'top',
-        paddingHorizontal: 5,
+        paddingHorizontal: 10,
         paddingVertical: 5,
         marginBottom: 15,
-        flex: 0.35
+        flex: 0.5
     },
     divSolucao: {
         height: 65,
         backgroundColor: "#201f23",
         textAlignVertical: 'top',
-        paddingHorizontal: 5,
+        paddingHorizontal: 10,
         paddingVertical: 5,
         marginBottom: 15,
-        flex: 0.4
-    }
+        flex: 1
+    },
+    btnClosedTicket: {
+        backgroundColor: '#00B37E',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '80%',
+        height: 50,
+        marginVertical: 20,
+        borderRadius: 10
+    },
+    textInfo: {
+        color: '#7d7c8a',
+        fontSize: 20
+    },
+    txtText: {
+        color: '#7d7c8a',
+        fontSize: 16,
+    },
+    texto: {
+        color: '#E1E1E6',
+        fontSize: 16,
+        marginTop: 10
+    },
+
 })

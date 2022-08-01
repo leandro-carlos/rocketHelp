@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Button, Pressable, Alert } from 'react-native';
 import { SignOut, HourglassSimple, Check, ChatCircleText } from 'phosphor-react-native'
+import firestore from '@react-native-firebase/firestore';
 
 // Imports 
 
@@ -11,19 +12,11 @@ import Logo from '../../assets/images/logo_secondary.svg'
 export default function Home({ navigation: { goBack }, navigation }) {
 
     const [statusSelected, setStatusSelected] = useState('open');
-    const [orders, setOrders] = useState([
-        {
-            id: '1',
-            patrimony: '123',
-            when: '18/07/2022 às 10:00',
-            status: 'closed',
-        },
-
-    ])
+    const [orders, setOrders] = useState([])
 
     const statusButton = statusSelected === 'open' ? "#FBA94C" : "#323238";
-    const colorEvent = statusSelected === 'open' ? "#FBA94C" : "#00B37E";
-    const secondStatus = statusSelected === 'closed' ? "#00B37E" : "#323238";
+    const openEvent = statusSelected === 'open' ? "#FBA94C" : "#00B37E";
+    const closedEvent = statusSelected === 'closed' ? "#00B37E" : "#323238";
 
     const TrocaCor = () => {
         if (statusSelected === 'open') {
@@ -34,6 +27,34 @@ export default function Home({ navigation: { goBack }, navigation }) {
         }
     }
 
+    function handleLogout() {
+        goBack()
+    }
+
+
+    useEffect(() => {
+
+        const subscriber = firestore()
+            .collection('Orders')
+            .where('status', '==', statusSelected)
+            .onSnapshot(snapshot => {
+                const data = snapshot.docs.map(doc => {
+                    const { patrimony, description, status, created_at } = doc.data();
+
+                    return {
+                        id: doc.id,
+                        patrimony,
+                        description,
+                        status,
+                    }
+                });
+                setOrders(data);
+                console.log(data)
+            });
+
+        return subscriber;
+    }, [statusSelected]);
+
     onClickitem = (item, index) => (
         navigation.navigate('Details', { item: item })
     )
@@ -43,7 +64,7 @@ export default function Home({ navigation: { goBack }, navigation }) {
 
             <View style={styles.header} >
                 <Logo style={styles.logo} />
-                <TouchableOpacity onPress={() => goBack()} >
+                <TouchableOpacity onPress={() => handleLogout()} >
                     <SignOut size={26} color="#7C7C8A" />
                 </TouchableOpacity>
             </View>
@@ -75,7 +96,7 @@ export default function Home({ navigation: { goBack }, navigation }) {
                         alignItems: 'center',
                         paddingVertical: 5,
                         marginRight: 2.5,
-                        backgroundColor: secondStatus,
+                        backgroundColor: closedEvent,
                     }} onPress={() => setStatusSelected('closed')}
                 >
                     <Text style={{ color: 'white' }}>FINALIZADOS</Text>
@@ -86,34 +107,29 @@ export default function Home({ navigation: { goBack }, navigation }) {
                 data={orders}
                 keyExtractor={item => item.id}
                 renderItem={({ item, index }) => (
-
                     <TouchableOpacity onPress={() => onClickitem(item)}>
                         <View style={{ width: "100%", justifyContent: 'center', alignItems: 'center' }}>
                             <View style={{
                                 backgroundColor: 'white',
-                                height: 65,
-                                width: "85%",
+                                height: 75,
+                                width: "90%",
                                 borderLeftWidth: 10,
-                                borderLeftColor: colorEvent,
+                                borderLeftColor: openEvent,
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
                                 marginTop: 15,
-                                // marginVertical: 10,
-                                borderRadius: 5,
+                                borderRadius: 8,
                                 flexDirection: 'row',
-                                paddingHorizontal: 12.5
+                                paddingHorizontal: 12.5,
                             }}>
-                                <View>
-                                    <Text style={{ color: 'black', fontSize: 18 }}>Patrimônio: {item.patrimony}</Text>
-                                    <Text> {item.when} </Text>
+                                <View >
+                                    <Text numberOfLines={3} style={{ color: 'black', fontSize: 18 }}>Patrimônio: {item.patrimony}</Text>
+                                    <Text numberOfLines={3} style={{ color: 'black', fontSize: 15, }}>Descrição: {item.description}</Text>
                                 </View>
                                 <TrocaCor />
                             </View>
                         </View>
                     </TouchableOpacity>
-
-
-
                 )}
                 contentContainerStyle={{ paddingBottom: 25, }}
                 ListEmptyComponent={() => (

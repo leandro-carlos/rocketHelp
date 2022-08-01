@@ -1,10 +1,41 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState } from 'react';
+import firestore from '@react-native-firebase/firestore';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, setTimeout } from 'react-native';
 
 import { CaretLeft } from 'phosphor-react-native'
 
 
 export default function NewTicket({ navigation: { goBack }, navigation }) {
+
+    const [patrimony, setPatrimony] = useState();
+    const [description, setDescription] = useState();
+    const usersCollection = firestore().collection('Orders');
+
+    function handleRegister() {
+
+        if (!patrimony || !description) {
+            return Alert.alert('Campos Vazios', 'Preencha todos os campos para registar um ticket')
+        } else {
+            firestore()
+                .collection('Orders')
+                .add({
+                    id: 1,
+                    status: 'open',
+                    patrimony: patrimony,
+                    description: description,
+                    created_at: firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    Alert.alert('Solicitação', 'Solicitação registrado com sucesso!')
+                    goBack()
+                }).catch(() => {
+                    Alert.alert
+                })
+        }
+
+    }
+
+
     return (
         <View style={styles.container}>
 
@@ -16,12 +47,14 @@ export default function NewTicket({ navigation: { goBack }, navigation }) {
 
             </View>
 
-            <TextInput placeholder='Número do Patrimônio' placeholderTextColor={'white'} fontSize={16} style={styles.inputPatrimonio} />
-            <TextInput placeholder='Descrição do Problema' placeholderTextColor={'white'} fontSize={16} multiline={true} style={styles.inputDescricao} />
+            <TextInput placeholder='Número do Patrimônio' onChangeText={setPatrimony} placeholderTextColor={'white'} fontSize={16} style={styles.inputPatrimonio} />
+            <TextInput placeholder='Descrição do Problema' onChangeText={setDescription} placeholderTextColor={'white'} fontSize={16} multiline={true} style={styles.inputDescricao} />
 
-            <View style={{ alignItems: 'center', marginBottom: 10, marginTop: 15}}>
+            <View style={{ alignItems: 'center', marginBottom: 10, marginTop: 15 }}>
                 <TouchableOpacity
-                    style={styles.btnCadastrar}>
+                    style={styles.btnCadastrar}
+                    onPress={() => handleRegister()}
+                >
                     <Text style={{ textAlign: 'center', color: 'white' }}>Cadastrar</Text>
                 </TouchableOpacity>
             </View>
