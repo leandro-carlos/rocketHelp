@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import firestore from '@react-native-firebase/firestore';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 
 import { CaretLeft, CircleWavyCheck, Hourglass, DesktopTower, Newspaper } from 'phosphor-react-native'
@@ -11,24 +12,26 @@ export default function Details({ navigation: { goBack }, route, navigation }) {
     function handleOrderClose() {
         if (!solution) {
             return Alert.alert('Solicitação', 'Informa a solução para encerrar a solicitação');
+        } else {
+            firestore()
+                .collection('Orders')
+                .doc(item.id)
+                .update({
+                    status: 'closed',
+                    solution,
+                    closed_at: firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    Alert.alert('Solicitação', 'Solicitação encerrada.');
+                    goBack();
+                })
+                .catch((error) => {
+                    console.log(error);
+                    Alert.alert('Solicitação', 'Não foi possível encerrar a solicitação');
+                });
         }
 
-        firestore()
-            .collection('Orders')
-            .doc(orderId)
-            .update({
-                status: 'closed',
-                solution,
-                closed_at: firestore.FieldValue.serverTimestamp()
-            })
-            .then(() => {
-                Alert.alert('Solicitação', 'Solicitação encerrada.');
-                goBack();
-            })
-            .catch((error) => {
-                console.log(error);
-                Alert.alert('Solicitação', 'Não foi possível encerrar a solicitação');
-            });
+
     }
     return (
 
@@ -88,14 +91,19 @@ export default function Details({ navigation: { goBack }, route, navigation }) {
                     <CircleWavyCheck size={26} weight="regular" color='#996DFF' style={{ marginRight: 10 }} />
                     <Text style={style.txtText}>Solução</Text>
                 </View>
-                <TextInput
+
+                {item.status === 'open' ? <TextInput
                     style={{ backgroundColor: '#121214', flex: 0.95, textAlignVertical: 'top', borderRadius: 10, paddingHorizontal: 5 }}
                     placeholder='Solução do problema:'
                     placeholderTextColor={'white'}
+                    onChangeText={setSolution}
                     color='white'
                     multiline
                 >
                 </TextInput>
+                    : <Text>{solution}</Text>
+                }
+
             </View>
 
 

@@ -49,7 +49,6 @@ export default function Home({ navigation: { goBack }, navigation }) {
                     }
                 });
                 setOrders(data);
-                console.log(data)
             });
 
         return subscriber;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import firestore from '@react-native-firebase/firestore';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, setTimeout } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 
 import { CaretLeft } from 'phosphor-react-native'
 
